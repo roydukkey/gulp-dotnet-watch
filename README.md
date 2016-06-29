@@ -2,7 +2,7 @@
 
 dotnet-watch plugin for [Gulp](https://github.com/gulpjs/gulp)
 
-# Install
+## Install
 
 ```
 npm install gulp-dotnet-watch --save-dev
@@ -46,42 +46,42 @@ gulp.task('watch-server', function (cb) {
 
 ## Options
 
-### cwd
+#### cwd
 
 The `cwd` option should be the path where the [dotnet-watch](https://github.com/aspnet/dotnet-watch#how-to-install) tooling is available.
 
 **Default:** './'
 
-### options
+#### options
 
 Toggle options such as `--verbose` or `--no-build` are to be placed in the `options` array.
 
 **Default:** null
 
-### arguments
+#### arguments
 
 The `arguments` option is a object for any key/value arguments. For example, `--framework net451 -- --arg1 value1` would result in `{ framework: 'net451, arg1: 'value1' }`.
 
 **Default:** null
 
-### logLevel
+#### logLevel
 
-This option will determine the level of log information that will be output to the console.
+This option will determine the level of log information that will be output to the console. Log information will include any information equal to or less severe than the configured value.
 
-**Default:** 'info'
+**Default:** 'info'<br />
 **Values:** 'error', 'warning', 'info', 'silent'
 
 ## Methods
 
-### dotnet.watch(task [, options [, callback]])
+#### dotnet.watch(task [, options [, callback]])
 
 This static method will start a watch process for the provided `task`, and can be configured by passing an `options` object. The method will return an active watcher instance, and the `callback` will be issued once the watch process has started the application. Supported `task`s include 'run' and 'test', however others may still work.
 
-### new dotnet([options]).watch(task [, callback])
+#### new dotnet([options]).watch(task [, callback])
 
 This method will start a watch process for the provided `task`. The method will return an active watcher instance, and the `callback` will be issued once the watch process has started the application.
 
-### new dotnet([options]).kill()
+#### new dotnet([options]).kill()
 
 This method will kill the active watch process on the watcher instance.
 
