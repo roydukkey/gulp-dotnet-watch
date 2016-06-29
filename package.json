@@ -1,0 +1,34 @@
+{
+	"name": "gulp-dotnet-watch",
+	"version": "0.1.0",
+	"description": "dotnet-watch plugin for gulp",
+	"main": "index.js",
+
+	"homepage": "https://github.com/roydukkey/gulp-dotnet-watch#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/roydukkey/gulp-dotnet-watch.git"
+	},
+	"bugs": {
+		"url": "https://github.com/roydukkey/gulp-dotnet-watch/issues"
+	},
+
+	"keywords": [
+		"gulp",
+		"aspnet",
+		"aspnetcore",
+		"dotnet",
+		"dotnetcore",
+		"dotnetwatch",
+		"watch",
+		"watcher"
+	],
+
+	"author": "roydukkey",
+	"license": "MIT",
+
+	"dependencies": {
+		"gutil": "^1.6.4",
+		"object-assign": "^4.1.0"
+	}
+}
