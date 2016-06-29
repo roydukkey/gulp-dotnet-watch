@@ -13,11 +13,11 @@ Don't forget to install the [dotnet-watch](https://github.com/aspnet/dotnet-watc
 ## Basic Usage
 
 ```javascript
-var gulp = require('gulp')
-	, dotnet = require('gulp-dotnet-watch');
+var gulp = require('gulp'),
+	dotnet = require('gulp-dotnet-watch');
 
 gulp.task('watch-server', function () {
-  dotnet.watch('run', {
+	dotnet.watch('run', {
 		cwd: './Web'
 	});
 });
@@ -26,8 +26,8 @@ gulp.task('watch-server', function () {
 ## Advanced Usage
 
 ```javascript
-var gulp = require('gulp')
-	, dotnet = require('gulp-dotnet-watch');
+var gulp = require('gulp'),
+	dotnet = require('gulp-dotnet-watch');
 
 gulp.task('watch-server', function (cb) {
 	var watcher = new dotnet({
@@ -40,7 +40,7 @@ gulp.task('watch-server', function (cb) {
 		}
 	});
 
-  watcher.watch('run', cb);
+	watcher.watch('run', cb);
 });
 ```
 
