@@ -1,6 +1,6 @@
 {
 	"name": "gulp-dotnet-watch",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "dotnet-watch plugin for gulp",
 	"main": "index.js",
 
@@ -28,7 +28,7 @@
 	"license": "MIT",
 
 	"dependencies": {
-		"gutil": "^1.6.4",
+		"gulp-util": "^3.0.7",
 		"object-assign": "^4.1.0"
 	}
 }
