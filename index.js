@@ -19,7 +19,7 @@ const defaults = {
 	arguments: null // For key/value flags. ie. { framework: 'net451', configuration: 'Debug', customArg1: 'Custom Value 1' }
 };
 
-function log(logLevel, targetLevel, msg, data) {
+function log(logLevel, targetLevel, msg) {
 	if (logLevel >= targetLevel) {
 		msg = msg.toString().trim();
 
@@ -30,14 +30,7 @@ function log(logLevel, targetLevel, msg, data) {
 					? gutil.colors.yellow
 					: gutil.colors.blue;
 
-			msg = `${color(SERVICE_NAME)}: ${msg}`;
-
-			if (data) {
-				gutil.log(msg, data);
-			}
-			else {
-				gutil.log(msg);
-			}
+			gutil.log(`${color(SERVICE_NAME)}: ${msg}`);
 		}
 	}
 }
