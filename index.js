@@ -122,6 +122,8 @@ class DotnetWatch {
 
 	constructor(options) {
 		this.options = assign({}, Defaults, options);
+
+		this.isListening = false;
 	}
 
 	watch(task, done) {
@@ -137,8 +139,6 @@ class DotnetWatch {
 
 			let args = BuildCommand(task, this.options.options, this.options.arguments);
 
-			this.isWatching = true;
-
 			this._child = spawn('dotnet', args, {
 				cwd: this.options.cwd
 			});
@@ -146,24 +146,31 @@ class DotnetWatch {
 			this._child.stdout.on('data', (data) => {
 				Log(LogLevels.info, logLevel, data);
 
-				if (data.indexOf('Ctrl+C') > -1) {
+				if (data.indexOf('Application started') > -1) {
+					this.isListening = true;
+
 					if (done) {
 						Log(LogLevels.info, logLevel, 'Passing to callback');
 
 						done();
 					}
 				}
+				else if (data.indexOf('Running dotnet with the following arguments') > -1) {
+					this.isListening = false;
+				}
 			});
 
 			this._child.stderr.on('data', (data) => {
+				this.isListening = false;
 				Log(LogLevels.error, logLevel, data);
 			});
 
 			this._child.on('close', () => {
-				this.isWatching = false;
+				this.isListening = false;
 			});
 
 			this._child.on('error', (error) => {
+				this.isListening = false;
 				Log(LogLevels.error, logLevel, error.stack);
 			});
 		}
@@ -173,6 +180,7 @@ class DotnetWatch {
 
 	kill() {
 		if (this._child) {
+			this.isListening = false;
 			this._child.kill();
 		}
 

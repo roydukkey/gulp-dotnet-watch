@@ -85,6 +85,11 @@ This method will start a watch process for the provided `task`. The method will 
 
 This method will kill the active watch process on the watcher instance.
 
+## Properties
+
+#### isListening
+
+This property is `true` when the application is ready to receive requests, otherwise `false`.
 
 ## License
 
