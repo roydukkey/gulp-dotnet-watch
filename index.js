@@ -1,41 +1,42 @@
 'use strict';
 
-var SERVICE_NAME = 'dotnet-watch'
-	, assign = require('object-assign')
+var assign = require('object-assign')
 	, gutil = require('gulp-util')
 	, spawn = require('child_process').spawn;
 
-const logLevels = {
+const ServiceName = 'dotnet-watch';
+
+const LogLevels = {
 	error: 1,
 	warning: 2,
 	info: 3,
 	silent: 4
 };
 
-const defaults = {
+const Defaults = {
 	cwd: './',
 	logLevel: 'info',
 	options: null, // For value flags. ie. [ 'verbose', 'no-build' ]
 	arguments: null // For key/value flags. ie. { framework: 'net451', configuration: 'Debug', customArg1: 'Custom Value 1' }
 };
 
-function log(logLevel, targetLevel, msg) {
+function Log(logLevel, targetLevel, msg) {
 	if (logLevel >= targetLevel) {
 		msg = msg.toString().trim();
 
 		if (msg.length > 0) {
-			let color = logLevel === logLevels.error
+			let color = logLevel === LogLevels.error
 				? gutil.colors.red
-				: logLevel === logLevels.warning
+				: logLevel === LogLevels.warning
 					? gutil.colors.yellow
 					: gutil.colors.blue;
 
-			gutil.log(`${color(SERVICE_NAME)}: ${msg}`);
+			gutil.log(`${color(ServiceName)}: ${msg}`);
 		}
 	}
 }
 
-function buildCommand(task, opts, args) {
+function BuildCommand(task, opts, args) {
 	let output = ['watch'];
 
 	if (opts !== null) {
@@ -120,21 +121,21 @@ class DotnetWatch {
 	}
 
 	constructor(options) {
-		this.options = assign({}, defaults, options);
+		this.options = assign({}, Defaults, options);
 	}
 
 	watch(task, done) {
-		let logLevel = logLevels[this.options.logLevel];
+		let logLevel = LogLevels[this.options.logLevel];
 
 		if (this._child) {
-			log(logLevels.info, logLevel, 'Already watching');
+			Log(LogLevels.info, logLevel, 'Already watching');
 		}
 		else {
 			if (!this._child) {
 				process.on('exit', () => this.kill());
 			}
 
-			let args = buildCommand(task, this.options.options, this.options.arguments);
+			let args = BuildCommand(task, this.options.options, this.options.arguments);
 
 			this.isWatching = true;
 
@@ -143,11 +144,11 @@ class DotnetWatch {
 			});
 
 			this._child.stdout.on('data', (data) => {
-				log(logLevels.info, logLevel, data);
+				Log(LogLevels.info, logLevel, data);
 
 				if (data.indexOf('Ctrl+C') > -1) {
 					if (done) {
-						log(logLevels.info, logLevel, 'Passing to callback');
+						Log(LogLevels.info, logLevel, 'Passing to callback');
 
 						done();
 					}
@@ -155,7 +156,7 @@ class DotnetWatch {
 			});
 
 			this._child.stderr.on('data', (data) => {
-				log(logLevels.error, logLevel, data);
+				Log(LogLevels.error, logLevel, data);
 			});
 
 			this._child.on('close', () => {
@@ -163,7 +164,7 @@ class DotnetWatch {
 			});
 
 			this._child.on('error', (error) => {
-				log(logLevels.error, logLevel, error.stack);
+				Log(LogLevels.error, logLevel, error.stack);
 			});
 		}
 
