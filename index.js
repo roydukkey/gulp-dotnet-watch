@@ -6,11 +6,11 @@ var assign = require('object-assign')
 
 const ServiceName = 'dotnet-watch';
 
-const LogLevels = {
+const LogLevels = {	
+	silent: 0,
 	error: 1,
 	warning: 2,
-	info: 3,
-	silent: 4
+	info: 3
 };
 
 const Defaults = {
@@ -21,7 +21,7 @@ const Defaults = {
 };
 
 function Log(logLevel, targetLevel, msg) {
-	if (logLevel >= targetLevel) {
+	if (logLevel <= targetLevel) {
 		msg = msg.toString().trim();
 
 		if (msg.length > 0) {
