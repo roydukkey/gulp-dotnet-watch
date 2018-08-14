@@ -1,7 +1,7 @@
 {
 	"name": "gulp-dotnet-watch",
 	"version": "0.3.0",
-	"description": "dotnet-watch plugin for node",
+	"description": "dotnet-watch plugin for gulp",
 	"main": "index.js",
 
 	"homepage": "https://github.com/roydukkey/gulp-dotnet-watch#readme",
