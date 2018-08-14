@@ -1,177 +1,133 @@
 'use strict';
 
-var assign = require('object-assign')
-	, gutil = require('gulp-util')
+const assign = require('object-assign')
+	, chalk = require('chalk')
 	, spawn = require('child_process').spawn;
 
 const ServiceName = 'dotnet-watch';
 
-const LogLevels = {
-	error: 1,
-	warning: 2,
-	info: 3,
-	silent: 4
-};
-
 const Defaults = {
 	cwd: './',
-	logLevel: 'info',
-	options: null, // For value flags. ie. [ 'verbose', 'no-build' ]
-	arguments: null // For key/value flags. ie. { framework: 'net451', configuration: 'Debug', customArg1: 'Custom Value 1' }
+	project: null, // -p | --project <PROJECT>; The project to watch
+	quiet: false, // -q | --quiet; Suppresses all output except warnings and errors
+	verbose: false, // -v | --verbose; Show verbose output
+	options: null, // [[--] <arg>...]; Special value options that will be passed to the child dotnet process. ie. [ 'verbose', 'no-build' ]
+	arguments: null // [[--] <arg>...]; Special key/value arguments that will be passed to the child process. ie. { framework: 'net451', configuration: 'Debug', customArg1: 'Custom Value 1' }
 };
 
-function Log(logLevel, targetLevel, msg) {
-	if (logLevel >= targetLevel) {
+const LogLevels = {
+	info: 1,
+	warning: 2,
+	error: 3
+};
+
+const Log = (logLevel, msg, quiet = false) => {
+	if (!quiet || logLevel > LogLevels.info) {
 		msg = msg.toString().trim();
 
 		if (msg.length > 0) {
 			let color = logLevel === LogLevels.error
-				? gutil.colors.red
+				? chalk.red
 				: logLevel === LogLevels.warning
-					? gutil.colors.yellow
-					: gutil.colors.blue;
+					? chalk.yellow
+					: chalk.blue;
 
-			gutil.log(`${color(ServiceName)}: ${msg}`);
+			console.log(`[${color(ServiceName)}] ${msg}`);
 		}
 	}
 }
 
-function BuildCommand(task, opts, args) {
+const BuildCommand = (task, config, opts, args) => {
 	let output = ['watch'];
 
-	if (opts !== null) {
-		opts = opts.slice(0);
+	// @dotnet watch: <quiet> configures watch
+	if (config.queit) {
+		output.push('--queiet');
 	}
-	args = assign({}, args);
 
-	// @dotnet: <verbose> must come before task
-	if (opts !== null) {
-		opts = AddOptions(output, opts, ['verbose'], true);
+	// @dotnet watch: <verbose> configures watch
+	if (config.verbose) {
+		output.push('--verbose');
+	}
+
+	// @dotnet watch: <project> configures watch
+	if (config.project !== null) {
+		output.push('--project', config.project);
 	}
 
 	output.push(task);
 
-	// @Test: <project> comes directly after task
-	if (task === 'test' && args !== null && args.hasOwnProperty('project')) {
-		output.push(args.project);
-
-		delete args.project;
+	//@dotnet run || @dotnet test: following <options> and <arguments> configures run or test
+	if (opts !== null && opts.length > 0 || args !== null && Object.keys(args).length > 0) {
+		output.push('--');
 	}
 
 	// Value Options
-	if (opts !== null) {
-		for (let i = 0; i < opts.length; i++) {
-			AddOptions(output, opts, [opts[i]], false);
-		}
+	for (let opt of opts) {
+		output.push('--' + opt);
 	}
 
 	// Key Value Options
-	if (args !== null) {
-		if (task === 'run') {
-
-			// @Run: <framework>, <configuration>, <project> come before custom arguments
-			AddArguments(output, args, ['framework', 'configuration', 'project'], true);
-
-			// @Run: custom argument indication
-			if (Object.keys(args).length > 0) {
-				output.push('--');
-			}
-		}
-
-		for (let arg in args) {
-			AddArguments(output, args, [arg], false);
-		}
+	for (let arg in args) {
+		output.push('--' + arg, args[arg]);
 	}
 
 	return output;
 }
 
-function AddOptions(output, source, names, doDelete) {
-	for (let i = 0; i < names.length; i++) {
-		let index = source.indexOf(names[i]);
-
-		if (index >= 0) {
-			output.push('--' + names[i]);
-
-			if (doDelete) {
-				source = source.filter(e => e !== names[i]);
-			}
-		}
-	}
-
-	return source;
-}
-
-function AddArguments(output, source, names, doDelete) {
-	for (let i = 0; i < names.length; i++) {
-		if (source.hasOwnProperty(names[i])) {
-			output.push('--' + names[i], source[names[i]]);
-
-			if (doDelete) {
-				delete source[names[i]];
-			}
-		}
-	}
-}
-
 class DotnetWatch {
 
-	static watch(task, options, callback) {
-		return new DotnetWatch(options).watch(task, callback);
+	static watch(task, options, loaded) {
+		return new DotnetWatch(options).watch(task, loaded);
 	}
 
 	constructor(options) {
 		this.options = assign({}, Defaults, options);
-
-		this.isListening = false;
+		this.isWatching = false;
 	}
 
-	watch(task, done) {
-		let logLevel = LogLevels[this.options.logLevel];
-
+	watch(task, loaded) {
 		if (this._child) {
-			Log(LogLevels.info, logLevel, 'Already watching');
+			Log(LogLevels.warn, 'Already watching', this.options.quiet);
 		}
 		else {
 			if (!this._child) {
 				process.on('exit', () => this.kill());
 			}
 
-			let args = BuildCommand(task, this.options.options, this.options.arguments);
+			let args = BuildCommand(task, this.options, this.options.options, this.options.arguments);
 
 			this._child = spawn('dotnet', args, {
 				cwd: this.options.cwd
 			});
 
 			this._child.stdout.on('data', (data) => {
-				Log(LogLevels.info, logLevel, data);
+				Log(LogLevels.info, data);
 
 				if (data.indexOf('Application started') > -1) {
-					this.isListening = true;
+					this.isWatching = true;
 
-					if (done) {
-						Log(LogLevels.info, logLevel, 'Passing to callback');
-
-						done();
+					if (loaded) {
+						loaded();
 					}
 				}
 				else if (data.indexOf('Running dotnet with the following arguments') > -1) {
-					this.isListening = false;
+					this.isWatching = false;
 				}
 			});
 
 			this._child.stderr.on('data', (data) => {
-				this.isListening = false;
-				Log(LogLevels.error, logLevel, data);
+				this.isWatching = false;
+				Log(LogLevels.error, data);
 			});
 
 			this._child.on('close', () => {
-				this.isListening = false;
+				this.isWatching = false;
 			});
 
 			this._child.on('error', (error) => {
-				this.isListening = false;
-				Log(LogLevels.error, logLevel, error.stack);
+				this.isWatching = false;
+				Log(LogLevels.error, error.stack);
 			});
 		}
 
