@@ -12,12 +12,10 @@ npm install gulp-dotnet-watch --save-dev
 
 ```javascript
 var gulp = require('gulp'),
-	dotnetWatcher = require('gulp-dotnet-watch');
+	DotnetWatch = require('gulp-dotnet-watch');
 
 gulp.task('watch-server', function () {
-	dotnetWatcher.watch('run', {
-		cwd: './Web'
-	});
+	DotnetWatch.watch('run');
 });
 ```
 
@@ -25,20 +23,21 @@ gulp.task('watch-server', function () {
 
 ```javascript
 var gulp = require('gulp'),
-	dotnetWatcher = require('gulp-dotnet-watch');
+	DotnetWatch = require('gulp-dotnet-watch');
 
-gulp.task('watch-server', function (cb) {
-	var watcher = new dotnetWatcher({
-		cwd: './Web',
-		logLevel: 'error',
-		options: ['verbose'],
+gulp.task('watch-server', function () {
+	var watcher = new DotnetWatch({
+		project: './WebFull',
+		verbose:, 'true'
 		arguments: {
 			framework: 'net451',
-			arg1: 'value'
+			customArg1: 'Custom Value 1'
 		}
 	});
 
-	watcher.watch('run', cb);
+	watcher.watch('run', function() {
+		console.log('dotnet-watch has loaded.');
+	}});
 });
 ```
 
@@ -82,15 +81,15 @@ Special key/value arguments that will be passed to the child process. For exampl
 
 ## Methods
 
-#### dotnet.watch(task [, options [, loaded]])
+#### DotnetWatch.watch(task [, options [, loaded]])
 
 This static method will start a watch process for the provided `task`, and can be configured by passing an `options` object. The method will return an active watcher instance, and the `loaded` callback will be issued once the watch process has started the application. Supported `task`s include 'run' and 'test', however others may still work.
 
-#### new dotnet([options]).watch(task [, loaded])
+#### new DotnetWatch([options]).watch(task [, loaded])
 
 This method will start a watch process for the provided `task`. The method will return an active watcher instance, and the `loaded` callback will be issued once the watch process has started the application.
 
-#### new dotnet([options]).kill()
+#### new DotnetWatch([options]).kill()
 
 This method will kill the active watch process on the watcher instance.
 
@@ -99,6 +98,10 @@ This method will kill the active watch process on the watcher instance.
 #### isWatching
 
 This property is `true` when the application is ready to receive requests, otherwise `false`.
+
+#### options
+
+This property reveals the options that where used to configure the watcher.
 
 ## License
 
