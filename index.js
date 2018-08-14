@@ -8,11 +8,15 @@ const ServiceName = 'dotnet-watch';
 
 const Defaults = {
 	cwd: './',
-	project: null, // -p | --project <PROJECT>; The project to watch
-	quiet: false, // -q | --quiet; Suppresses all output except warnings and errors
-	verbose: false, // -v | --verbose; Show verbose output
-	options: null, // [[--] <arg>...]; Special value options that will be passed to the child dotnet process. ie. [ 'verbose', 'no-build' ]
-	arguments: null // [[--] <arg>...]; Special key/value arguments that will be passed to the child process. ie. { framework: 'net451', configuration: 'Debug', customArg1: 'Custom Value 1' }
+	project: null, // [-p | --project <PROJECT>]; The project to watch
+	quiet: false, // [-q | --quiet]; Suppresses all output except warnings and errors
+	verbose: false, // [-v | --verbose]; Show verbose output
+	options: null, // [<arg>...]; Value options that will configure the dotnet task. ie. [ 'no-launch-profile', 'no-build' ]
+	arguments: null, // [<arg>...]; Key/value arguments that will configure the dotnet task. ie. { framework: 'net451', configuration: 'Debug' }
+	special: {
+		options: null, // [-- <arg>...]; Special value options that will be passed to the child dotnet process. ie. [ 'verbose', 'no-build' ]
+		arguments: null // [-- <arg>...]; Special key/value arguments that will be passed to the child process. ie. { customArg1: 'Custom Value 1' }
+	}
 };
 
 const LogLevels = {
@@ -37,7 +41,7 @@ const Log = (logLevel, msg, quiet = false) => {
 	}
 }
 
-const BuildCommand = (task, config, opts, args) => {
+const BuildCommand = (task, config, opts, args, specOpts, specArgs) => {
 	let output = ['watch'];
 
 	// @dotnet watch: <quiet> configures watch
@@ -57,19 +61,29 @@ const BuildCommand = (task, config, opts, args) => {
 
 	output.push(task);
 
-	//@dotnet run || @dotnet test: following <options> and <arguments> configures run or test
-	if (opts !== null && opts.length > 0 || args !== null && Object.keys(args).length > 0) {
+	if (opts !==null) {
+		for (let opt of opts) {
+			output.push('--' + opt);
+		}
+	}
+
+	for (let arg in args) {
+		output.push('--' + arg, args[arg]);
+	}
+
+	//@dotnet run || @dotnet test: following <options> and <arguments> configures the child process of run or test
+	if (specOpts !== null && specOpts.length > 0 || specArgs !== null && Object.keys(specArgs).length > 0) {
 		output.push('--');
 	}
 
-	// Value Options
-	for (let opt of opts) {
-		output.push('--' + opt);
+	if (specOpts !==null) {
+		for (let opt of specOpts) {
+			output.push('--' + opt);
+		}
 	}
 
-	// Key Value Options
-	for (let arg in args) {
-		output.push('--' + arg, args[arg]);
+	for (let arg in specArgs) {
+		output.push('--' + arg, specArgs[arg]);
 	}
 
 	return output;
@@ -83,7 +97,7 @@ class DotnetWatch {
 
 	constructor(options) {
 		this.options = assign({}, Defaults, options);
-		this.isWatching = false;
+		this.isApplicationStarted = false;
 	}
 
 	watch(task, loaded) {
@@ -95,7 +109,7 @@ class DotnetWatch {
 				process.on('exit', () => this.kill());
 			}
 
-			let args = BuildCommand(task, this.options, this.options.options, this.options.arguments);
+			let args = BuildCommand(task, this.options, this.options.options, this.options.arguments, this.options.special.options, this.options.special.arguments);
 
 			this._child = spawn('dotnet', args, {
 				cwd: this.options.cwd
@@ -105,28 +119,28 @@ class DotnetWatch {
 				Log(LogLevels.info, data);
 
 				if (data.indexOf('Application started') > -1) {
-					this.isWatching = true;
+					this.isApplicationStarted = true;
 
 					if (loaded) {
 						loaded();
 					}
 				}
 				else if (data.indexOf('Running dotnet with the following arguments') > -1) {
-					this.isWatching = false;
+					this.isApplicationStarted = false;
 				}
 			});
 
 			this._child.stderr.on('data', (data) => {
-				this.isWatching = false;
+				this.isApplicationStarted = false;
 				Log(LogLevels.error, data);
 			});
 
 			this._child.on('close', () => {
-				this.isWatching = false;
+				this.isApplicationStarted = false;
 			});
 
 			this._child.on('error', (error) => {
-				this.isWatching = false;
+				this.isApplicationStarted = false;
 				Log(LogLevels.error, error.stack);
 			});
 		}
@@ -136,7 +150,7 @@ class DotnetWatch {
 
 	kill() {
 		if (this._child) {
-			this.isListening = false;
+			this.isApplicationStarted = false;
 			this._child.kill();
 		}
 

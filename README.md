@@ -28,10 +28,15 @@ var gulp = require('gulp'),
 gulp.task('watch-server', function () {
 	var watcher = new DotnetWatch({
 		project: './WebFull',
-		verbose:, 'true'
+		verbose:, 'true',
+		options: [ 'no-build' ],
 		arguments: {
 			framework: 'net451',
-			customArg1: 'Custom Value 1'
+		},
+		special: {
+			arguments: {
+				customArg1: 'Custom Value 1'
+			}
 		}
 	});
 
@@ -47,37 +52,49 @@ gulp.task('watch-server', function () {
 
 The `cwd` option is based through to the child process.
 
-**Default:** './'
+**Default:** `'./'`
 
 #### project
 
 The project to be watched.
 
-**Default:** null
+**Default:** `null`
 
 #### quiet
 
 Suppresses all output except warnings and errors.
 
-**Default:** false
+**Default:** `false`
 
 #### verbose
 
 Show verbose output.
 
-**Default:** false
+**Default:** `false`
 
 #### options
 
-Special value options that will be passed to the child dotnet process. For example `[ 'verbose', 'no-build' ]` woudl result in `-- --verbose --no-build`.
+Value options that will configure the dotnet task. For example `[ 'no-launch-profile', 'no-build' ]` would result in `--no-launch-profile --no-build`.
 
-**Default:** null
+**Default:** `null`
 
 #### arguments
 
-Special key/value arguments that will be passed to the child process. For example `{ framework: 'net451', configuration: 'Debug', customArg1: 'Custom Value 1' }` would result in `-- --framework net451 --configuration Debug --customArg1 'Custom Value 1'`.
+Key/value arguments that will configure the dotnet task. For example `{ framework: 'net451', configuration: 'Debug' }` would result in `--framework net451 --configuration Debug`.
 
-**Default:** null
+**Default:** `null`
+
+#### special.options
+
+Special value options that will be passed to the child dotnet process. For example `[ 'custom-flag-1', 'custom-flag-2' ]` would result in `-- --custom-flag-1 --custom-flag-2`.
+
+**Default:** `null`
+
+#### special.arguments
+
+Key/value arguments that will configure the dotnet task. For example `{ customArg1: 'Custom Value 1', customArg2: 'Custom Value 2' }` would result in `-- --customArg1 "Custom Value 1" --customArg2 "Custom Value 2"`.
+
+**Default:** `null`
 
 ## Methods
 
@@ -95,9 +112,9 @@ This method will kill the active watch process on the watcher instance.
 
 ## Properties
 
-#### isWatching
+#### isApplicationStarted
 
-This property is `true` when the application is ready to receive requests, otherwise `false`.
+This property is `true` when the application is started ready to receive requests, otherwise `false`.
 
 #### options
 
