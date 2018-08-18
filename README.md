@@ -29,9 +29,10 @@ gulp.task('watch-server', function () {
 	var watcher = new DotnetWatch({
 		project: './WebFull',
 		verbose:, 'true',
-		options: [ 'no-build' ],
+		options: [ 'no-launch-profile' ],
 		arguments: {
-			framework: 'net451',
+			environment: 'Development',
+			"server.urls": 'https://localhost:6000;http://localhost:6001'
 		},
 		special: {
 			arguments: {
@@ -41,7 +42,7 @@ gulp.task('watch-server', function () {
 	});
 
 	watcher.watch('run', function() {
-		console.log('dotnet-watch has loaded.');
+		console.log('Application has started.');
 	}});
 });
 ```
@@ -80,19 +81,19 @@ Value options that will configure the dotnet task. For example `[ 'no-launch-pro
 
 #### arguments
 
-Key/value arguments that will configure the dotnet task. For example `{ framework: 'net451', configuration: 'Debug' }` would result in `--framework net451 --configuration Debug`.
+Key/value arguments that will configure the dotnet task. For example `{ framework: 'net451', verbosity: 'm' }` would result in `--framework net451 --verbosity m`.
 
 **Default:** `null`
 
 #### special.options
 
-Special value options that will be passed to the child dotnet process. For example `[ 'custom-flag-1', 'custom-flag-2' ]` would result in `-- --custom-flag-1 --custom-flag-2`.
+Special value options that will be passed through to the child dotnet process. For example `[ 'custom-flag-1', 'custom-flag-2' ]` would result in `-- --custom-flag-1 --custom-flag-2`.
 
 **Default:** `null`
 
 #### special.arguments
 
-Key/value arguments that will configure the dotnet task. For example `{ customArg1: 'Custom Value 1', customArg2: 'Custom Value 2' }` would result in `-- --customArg1 "Custom Value 1" --customArg2 "Custom Value 2"`.
+Special Key/value arguments that will be passed through to the child dotnet process. For example `{ customArg1: 'Custom Value 1', customArg2: 'Custom Value 2' }` would result in `-- --customArg1 "Custom Value 1" --customArg2 "Custom Value 2"`.
 
 **Default:** `null`
 

@@ -12,10 +12,10 @@ const Defaults = {
 	quiet: false, // [-q | --quiet]; Suppresses all output except warnings and errors
 	verbose: false, // [-v | --verbose]; Show verbose output
 	options: null, // [<arg>...]; Value options that will configure the dotnet task. ie. [ 'no-launch-profile', 'no-build' ]
-	arguments: null, // [<arg>...]; Key/value arguments that will configure the dotnet task. ie. { framework: 'net451', configuration: 'Debug' }
+	arguments: null, // [<arg>...]; Key/value arguments that will configure the dotnet task. ie. { framework: 'net451', verbosity: 'm' }
 	special: {
-		options: null, // [-- <arg>...]; Special value options that will be passed to the child dotnet process. ie. [ 'verbose', 'no-build' ]
-		arguments: null // [-- <arg>...]; Special key/value arguments that will be passed to the child process. ie. { customArg1: 'Custom Value 1' }
+		options: null, // [-- <arg>...]; Special value options that will be passed through to the child dotnet process. ie. [ 'verbose', 'no-build' ]
+		arguments: null // [-- <arg>...]; Special key/value arguments that will be passed through to the child process. ie. { customArg1: 'Custom Value 1' }
 	}
 };
 
